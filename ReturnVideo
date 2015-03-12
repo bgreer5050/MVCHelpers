@@ -1,0 +1,84 @@
+//Source
+// http://www.dotnetcurry.com/showarticle.aspx?ID=998
+
+Step 1: Open VS 2012/2013 and create an ASP.NET MVC Empty application. Name it as ‘MVC_CustomActionResult’. In this project, add a new folder and name it as ‘VideoFile’. In this folder, add Video files as per your choice. (I have used the .mp4 format)
+
+Step 2: In the project, add a new folder name it as ‘CustomResult’. In this folder add a new class file and name it as ‘VideoResult.cs’. Add the following code in it:
+
+using System.IO; 
+using System.Web.Hosting; 
+using System.Web.Mvc;
+namespace MVC_CustomActionResult.CustomResult 
+{ 
+    public class VideoResult : ActionResult 
+    { 
+        /// <summary> 
+        /// The below method will respond with the Video file 
+        /// </summary> 
+        /// <param name="context"></param> 
+        public override void ExecuteResult(ControllerContext context) 
+        { 
+            //The File Path 
+            var videoFilePath = HostingEnvironment.MapPath("~/VideoFile/Win8.mp4"); 
+            //The header information 
+            context.HttpContext.Response.AddHeader("Content-Disposition", "attachment; filename=Win8.mp4"); 
+            var file = new FileInfo(videoFilePath); 
+            //Check the file exist,  it will be written into the response 
+            if (file.Exists) 
+            { 
+                var stream = file.OpenRead(); 
+                var bytesinfile = new byte[stream.Length]; 
+                stream.Read(bytesinfile, 0, (int)file.Length); 
+                context.HttpContext.Response.BinaryWrite(bytesinfile); 
+            } 
+        } 
+    } 
+}
+
+The ExecuteResult method implementation above looks for the Video file. If it is found, then set the response by writing the file into the response.
+
+Step 3: In the application, add a new MVC Empty Controller, name it as VideoController and implement the code as below:
+
+using MVC_CustomActionResult.CustomResult; 
+using System.Web.Mvc;
+namespace MVC_CustomActionResult.Controllers 
+{ 
+    public class VideoController : Controller 
+    { 
+        // 
+        // GET: /Video/
+        public ActionResult Index() 
+        { 
+            return new VideoResult(); 
+        }
+    } 
+}
+
+The Index method now returns the VideoResult; the custom action result implemented in the previous step.
+
+Step 4: Run the application and navigate to the, Video/Index URL and the download experience will be similar to the following:video-download-mvc
+
+Step 5: In the project, add a new MVC Empty controller with the name SampleController, and add an index method in it as shown below:
+
+public class SampleController : Controller 
+{ 
+// 
+// GET: /Sample/
+public ActionResult Index() 
+{ 
+    return View(); 
+}
+}
+
+Step 6: Add a new View from the above action method, and add the following HTML 5 Video tag in it:
+
+<video width="320" height="240" controls autoplay="autoplay"> 
+  <source src="@Url.Action("Index","Video")" type="video/mp4"> 
+< /video>
+
+The video tag shown above is provided in HTML 5. The src property is set to the Index method in the Video controller which we have implemented in Step 3.
+
+Step 7: Run the application in a Browser (I have used Chrome), and the result will be as below:
+
+mvc-html5-play-video
+That’s it. So now you can have your ASP.NET MVC application ready for playing various videos in the browser.
